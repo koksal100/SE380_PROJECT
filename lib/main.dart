@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:se380_project/PageOne.dart';
+import 'package:se380_project/PageTwo.dart';
+import 'package:se380_project/PageThree.dart';
+import 'package:se380_project/PageFour.dart';
 
 void main() {
   runApp(const MyApp());
@@ -74,50 +77,6 @@ class _MyHomePageState extends State<MyHomePage> {
               label: 'Settings',
             )
           ]),
-    );
-  }
-}
-
-class PageTwo extends StatelessWidget {
-  const PageTwo({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Text(
-        'Tests Page',
-        style: Theme.of(context).textTheme.headlineMedium,
-      ),
-    );
-  }
-}
-
-// Sayfa 3
-class PageThree extends StatelessWidget {
-  const PageThree({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Text(
-        'Statistics Page',
-        style: Theme.of(context).textTheme.headlineMedium,
-      ),
-    );
-  }
-}
-
-// Sayfa 4
-class PageFour extends StatelessWidget {
-  const PageFour({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Text(
-        'Settings Page',
-        style: Theme.of(context).textTheme.headlineMedium,
-      ),
     );
   }
 }
