@@ -32,4 +32,5 @@ flutter:
     - assets/almanya.jpg
     - assets/fransa.png
     - assets/uk.jpg
+    - assets/translated_words.json
 
