@@ -33,4 +33,5 @@ flutter:
     - assets/fransa.png
     - assets/uk.jpg
     - assets/translated_words.json
+    - assets/meanings.json
 
