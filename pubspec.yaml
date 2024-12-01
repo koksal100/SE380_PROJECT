@@ -33,3 +33,4 @@ flutter:
     - assets/uk.jpg
     - assets/translated_words.json
     - assets/meanings.json
+    - assets/embeddings.json
