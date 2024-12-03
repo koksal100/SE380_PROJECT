@@ -22,8 +22,7 @@ class _PageOneState extends State<PageOne> {
 
   @override
   void dispose() {
-    _controller
-        .dispose(); // Bellek sızıntısını önlemek için controller'ı serbest bırakıyoruz.
+    _controller.dispose();
     super.dispose();
   }
 
@@ -87,10 +86,9 @@ class _PageOneState extends State<PageOne> {
                     decoration: InputDecoration(
                       errorMaxLines: 2,
                       errorStyle: TextStyle(
-                        fontSize: 14, // Yazı boyutunu burada ayarlayın
-                        color: Colors.red, // Hata mesajının rengini değiştirin
-                        fontWeight:
-                            FontWeight.bold, // Yazı kalınlığını ayarlayın
+                        fontSize: 14,
+                        color: Colors.red,
+                        fontWeight: FontWeight.bold,
                       ),
                       border: OutlineInputBorder(
                           borderSide: BorderSide(
@@ -106,7 +104,7 @@ class _PageOneState extends State<PageOne> {
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
                     colors: [
-                      Color(0xFFE0BBE4), // Açık mor
+                      Color(0xFFE0BBE4),
                       Color.fromARGB(255, 144, 103, 185),
                     ],
                     begin: Alignment.topLeft,
