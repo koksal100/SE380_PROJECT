@@ -3,8 +3,15 @@ import 'package:se380_project/PageOne.dart';
 import 'package:se380_project/PageTwo.dart';
 import 'package:se380_project/PageThree.dart';
 import 'package:se380_project/PageFour.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'firebase_options.dart'; // CLI ile oluşturulmuş dosya
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const MyApp());
 }
 
@@ -34,6 +41,29 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int pageIndex = 0;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  Future<void> _addData() async {
+    for (int i = 0; i < 100; i++) {
+      try {
+        await _firestore.collection('users').doc('exampleUser$i').set({
+          'name': 'ömer gök',
+          'age': 30,
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+        print('Data added successfully for exampleUser$i!');
+      } catch (e) {
+        print('Failed to add data for exampleUser$i: $e');
+      }
+    }
+  }
+
+  @override
+  void initState() {
+    _addData();
+    // TODO: implement initState
+    super.initState();
+  }
 
   final List<Widget> _pages = [
     const PageOne(),
