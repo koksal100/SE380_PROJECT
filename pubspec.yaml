@@ -32,3 +32,4 @@ flutter:
     - assets/translated_words.json
     - assets/meanings.json
     - assets/embeddings.json
+    - assets/choices.json
