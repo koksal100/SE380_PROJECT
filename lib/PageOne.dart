@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:se380_project/PageOneToOnlineScreen.dart';
 
 class PageOne extends StatefulWidget {
   const PageOne({super.key});
@@ -9,7 +10,7 @@ class PageOne extends StatefulWidget {
 
 class _PageOneState extends State<PageOne> {
   int currentIndex = 0;
-  final List<String> languages = ['Almanca', 'İngilizce', 'Fransızca'];
+  final List<String> languages = ['German', 'English', 'French'];
   final List<String> imagePaths = [
     'assets/almanya.jpg',
     'assets/uk.jpg',
@@ -115,9 +116,13 @@ class _PageOneState extends State<PageOne> {
                 child: ElevatedButton(
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
-                      setState(() {
-                        isRaceStarted = true;
-                      });
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => PageOneToOnlineScreen(
+                                nickname: _controller.text,
+                                language: languages[currentIndex])),
+                      );
                     }
                     ;
                   },

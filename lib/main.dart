@@ -44,7 +44,7 @@ class _MyHomePageState extends State<MyHomePage> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   Future<void> _addData() async {
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < 2; i++) {
       try {
         await _firestore.collection('users').doc('exampleUser$i').set({
           'name': 'ömer gök',
@@ -61,7 +61,6 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     _addData();
-    // TODO: implement initState
     super.initState();
   }
 
