@@ -24,6 +24,7 @@ class _PageOneToOnlineScreenState extends State<PageOneToOnlineScreen> {
   late String languageCode;
   late Map<String, dynamic> wordsMap;
   int currentQuestionIndex = 0;
+  String modOfJoiningRoom = "";
 
   void initState() {
     if (widget.language == "German") {
@@ -37,7 +38,6 @@ class _PageOneToOnlineScreenState extends State<PageOneToOnlineScreen> {
     joinOnlineRoom().then((onValue) {
       setState(() {
         isLoading = false;
-        ListenCurrentQuestionIndex();
       });
     });
     super.initState();
@@ -108,7 +108,6 @@ class _PageOneToOnlineScreenState extends State<PageOneToOnlineScreen> {
 
   Future<void> joinOnlineRoom() async {
     print("printÇalışıyor");
-    String modOfJoiningRoom = "";
     int InProgressRoomsLength = 0;
     try {
       //ODA BUL
@@ -197,7 +196,11 @@ class _PageOneToOnlineScreenState extends State<PageOneToOnlineScreen> {
                   .doc("Room_${InProgressRoomsLength + 1}")
                   .set(onValue.data()!);
               //HALİHAZIRDA BULUNDUĞUM COLLECTION REFERANSI ÜZERİNDEN AZ ÖNCE TAŞIDIĞIM DOCUMENTİ SİLDİM
-              await waitingRoomsReferance.doc(roomId).delete();
+              await waitingRoomsReferance.doc(roomId).delete().then((onValue) {
+                setState(() {
+                  roomId = "Room_${InProgressRoomsLength + 1}";
+                });
+              });
             });
           }
         });
@@ -228,40 +231,117 @@ class _PageOneToOnlineScreenState extends State<PageOneToOnlineScreen> {
     ;
   }
 
-  void ListenCurrentQuestionIndex() {
-    final currentRoom = FirebaseFirestore.instance
-        .collection('Languages')
-        .doc(widget.language)
-        .collection('WaitingRooms')
-        .doc(roomId);
-
-    currentRoom.snapshots().listen((onData) {
-      if (onData.exists) {
-        setState(() {
-          currentQuestionIndex = onData.data()?['currentQuestionIndex'];
-        });
-        print('currentQuestionIndex güncellendi: $currentQuestionIndex');
-      }
-    });
-  }
-
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(),
-      body: Center(
+      appBar: AppBar(
+        title: Text(
+          "Online Word Competition",
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
+        ),
+        centerTitle: true,
+        backgroundColor: const Color.fromARGB(255, 194, 164, 244),
+      ),
+      body: Container(
+        alignment: Alignment.center,
         child: isLoading
             ? CircularProgressIndicator()
-            : Column(
-                children: [
-                  Text(wordsMap.keys.elementAt(currentQuestionIndex)),
-                  Text(wordsMap[wordsMap.keys.elementAt(currentQuestionIndex)]
-                      ["meaning"]),
-                  Text(wordsMap[wordsMap.keys.elementAt(currentQuestionIndex)]
-                      ["what_word_is_displayed"]),
-                  Text(wordsMap[wordsMap.keys.elementAt(currentQuestionIndex)]
-                      ["question_form"]),
-                  Text("$currentQuestionIndex")
-                ],
+            : Padding(
+                padding: const EdgeInsets.all(28),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text(
+                      "Question ${currentQuestionIndex + 1} of ${wordsMap.keys.length}",
+                      style: TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.bold,
+                        color: const Color.fromARGB(255, 67, 67, 67),
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    SizedBox(
+                      height: 29,
+                    ),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: const Color.fromARGB(255, 213, 200, 237),
+                        borderRadius: BorderRadius.circular(13),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black,
+                            spreadRadius: 2,
+                            blurRadius: 11,
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        children: [
+                          Text(
+                            "Meaning",
+                            style: TextStyle(
+                              fontSize: 25,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: "Monospace",
+                              color: const Color.fromARGB(255, 102, 53, 186),
+                            ),
+                          ),
+                          SizedBox(height: 5),
+                          Text(
+                            wordsMap[wordsMap.keys
+                                .elementAt(currentQuestionIndex)]["meaning"]!,
+                            style: TextStyle(
+                                fontSize: 16,
+                                fontFamily: "Monospace",
+                                color: const Color.fromARGB(221, 0, 0, 0),
+                                fontWeight: FontWeight.bold),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: 39),
+                    Container(
+                      padding: const EdgeInsets.all(11),
+                      decoration: BoxDecoration(
+                        color: const Color.fromARGB(255, 213, 200, 237),
+                        borderRadius: BorderRadius.circular(90),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black,
+                            spreadRadius: 3,
+                            blurRadius: 15,
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        children: [
+                          Text(
+                            "Fill in the blanks",
+                            style: TextStyle(
+                              fontFamily: "Monospace",
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: const Color.fromARGB(255, 99, 22, 241),
+                            ),
+                          ),
+                          SizedBox(height: 8),
+                          Text(
+                            wordsMap[wordsMap.keys
+                                    .elementAt(currentQuestionIndex)]
+                                ["question_form"]!,
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: const Color.fromARGB(221, 0, 0, 0),
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
       ),
     );
