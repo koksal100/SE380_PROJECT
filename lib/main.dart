@@ -5,6 +5,8 @@ import 'package:se380_project/PageThree.dart';
 import 'package:se380_project/PageFour.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:uuid/uuid.dart';
 import 'firebase_options.dart'; // CLI ile oluşturulmuş dosya
 
 Future<void> main() async {
@@ -36,31 +38,18 @@ class MyHomePage extends StatefulWidget {
   final String title;
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<MyHomePage> createState() => MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class MyHomePageState extends State<MyHomePage> {
   int pageIndex = 0;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  static late String userId;
 
-  Future<void> _addData() async {
-    for (int i = 0; i < 2; i++) {
-      try {
-        await _firestore.collection('users').doc('exampleUser$i').set({
-          'name': 'ömer gök',
-          'age': 30,
-          'createdAt': FieldValue.serverTimestamp(),
-        });
-        print('Data added successfully for exampleUser$i!');
-      } catch (e) {
-        print('Failed to add data for exampleUser$i: $e');
-      }
-    }
-  }
+
 
   @override
   void initState() {
-    _addData();
+    initializeUserId();
     super.initState();
   }
 
@@ -71,6 +60,35 @@ class _MyHomePageState extends State<MyHomePage> {
     const PageFour(),
   ];
 
+
+  Future <void> initializeUserId()async {
+
+    await SharedPreferences.getInstance().then((prefs){
+      setState(() {
+        userId= prefs.getString('user_id')?? "";
+        print("myUSerID");
+        print(userId);
+      });
+      return prefs;
+    }).then((prefs)async{
+      if(userId==""){
+        setState(() {
+          userId=Uuid().v4();
+        });
+        await prefs.setString('user_id', userId);
+        await recordIdToFirebase();
+      }
+    });
+
+
+
+  }
+
+  Future<void> recordIdToFirebase()async {
+    final LanguageDocReferance = FirebaseFirestore.instance
+        .collection('users').doc(userId).set({"created_at":DateTime.now().toUtc()});
+    print("BAŞARIYLA KAYDEDİLDİ");
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
