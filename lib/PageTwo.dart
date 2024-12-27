@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;
 import 'dart:math';
+import 'package:shared_preferences/shared_preferences.dart';
 
 
 class PageTwo extends StatefulWidget {
@@ -120,6 +121,31 @@ class _PageTwoState extends State<PageTwo> {
       
     }
    }
+
+  Future<List<String>> getWordsFromPreferences(String key) async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getStringList(key) ?? [];
+  }
+
+  Future<void> saveWordsToPreferences(String key, List<String> words) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(key, words);
+  }
+
+  Future<void> moveWordToCorrectlyLearned(String word) async {
+    final prefs = await SharedPreferences.getInstance();
+
+    List<String> wrongWords = await getWordsFromPreferences('wrong_words');
+    List<String> correctWords = await getWordsFromPreferences('correct_words');
+
+    if (wrongWords.contains(word)) {
+      wrongWords.remove(word);
+      correctWords.add(word);
+
+      await saveWordsToPreferences('wrong_words', wrongWords);
+      await saveWordsToPreferences('correct_words', correctWords);
+    }
+  }
 
 
 
