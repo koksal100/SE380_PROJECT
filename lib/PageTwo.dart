@@ -6,6 +6,7 @@ import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;
 import 'dart:math';
 
+
 class PageTwo extends StatefulWidget {
   const PageTwo({super.key});
 
@@ -18,6 +19,7 @@ class _PageTwoState extends State<PageTwo> {
   late Future<Map<String, String>> futurefailedWordsByUser;
   late Map<String, String> failedWordsByUser;
   late Map<String, dynamic> choicesMap;
+  Map<String, String> nowCorrectlyAnsweredWords = {};
   int trueCounter = 0;
   int falseCounter = 0;
 
@@ -103,11 +105,23 @@ class _PageTwoState extends State<PageTwo> {
     if (answer ==
         failedWordsByUser[failedWordsByUser.keys.toList()[wordIndex]]!) {
       trueCounter++;
+      moveWordToCorrectlyAnswered(failedWordsByUser.keys.toList()[wordIndex]!);
     } else {
       falseCounter++;
     }
     setState(() {});
   }
+
+   void moveWordToCorrectlyAnswered(String word) async {
+    if (failedWordsByUser.containsKey(word)) {
+      nowCorrectlyAnsweredWords[word] = failedWordsByUser[word]!;
+      failedWordsByUser.remove(word);
+
+      
+    }
+   }
+
+
 
   @override
   Widget build(BuildContext context) {
