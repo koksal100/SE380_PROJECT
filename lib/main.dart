@@ -7,7 +7,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
-import 'firebase_options.dart'; // CLI ile oluşturulmuş dosya
+import 'firebase_options.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -46,12 +46,13 @@ class MyHomePageState extends State<MyHomePage> {
   static late String userId;
 
 
-
   @override
   void initState() {
     initializeUserId();
     super.initState();
   }
+
+
 
   final List<Widget> _pages = [
     const PageOne(),
@@ -92,15 +93,7 @@ class MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: const Color.fromARGB(255, 174, 133, 231),
-        title: Center(
-          child: Text(
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            widget.title,
-          ),
-        ),
-      ),
+
       body: _pages[pageIndex],
       bottomNavigationBar: BottomNavigationBar(
           currentIndex: pageIndex,
