@@ -44,7 +44,7 @@ class MyHomePage extends StatefulWidget {
 class MyHomePageState extends State<MyHomePage> {
   int pageIndex = 0;
   static late String userId;
-
+  static bool determineUserId=false;
 
   @override
   void initState() {
@@ -63,10 +63,9 @@ class MyHomePageState extends State<MyHomePage> {
 
 
   Future <void> initializeUserId()async {
-
     await SharedPreferences.getInstance().then((prefs){
       setState(() {
-        userId= prefs.getString('user_id')?? "";
+        userId= prefs.getString('UserId')?? "";
         print("myUSerID");
         print(userId);
       });
@@ -74,10 +73,8 @@ class MyHomePageState extends State<MyHomePage> {
     }).then((prefs)async{
       if(userId==""){
         setState(() {
-          userId=Uuid().v4();
+          determineUserId=true;
         });
-        await prefs.setString('user_id', userId);
-        await recordIdToFirebase();
       }
     });
 
@@ -85,15 +82,11 @@ class MyHomePageState extends State<MyHomePage> {
 
   }
 
-  Future<void> recordIdToFirebase()async {
-    final LanguageDocReferance = FirebaseFirestore.instance
-        .collection('users').doc(userId).set({"created_at":DateTime.now().toUtc()});
-    print("BAŞARIYLA KAYDEDİLDİ");
-  }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-
       body: _pages[pageIndex],
       bottomNavigationBar: BottomNavigationBar(
           currentIndex: pageIndex,
@@ -113,8 +106,8 @@ class MyHomePageState extends State<MyHomePage> {
             BottomNavigationBarItem(
                 icon: Icon(Icons.insights), label: 'Statistics'),
             BottomNavigationBarItem(
-              icon: Icon(Icons.settings),
-              label: 'Settings',
+              icon: Icon(Icons.sort),
+              label: 'Rankings',
             )
           ]),
     );

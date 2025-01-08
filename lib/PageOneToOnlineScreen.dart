@@ -84,6 +84,7 @@ class _PageOneToOnlineScreenState extends State<PageOneToOnlineScreen> {
   void dispose() {
     _timer.cancel();
     _controller.dispose();
+    recordScoreToTheFirebase();
     if (modOfJoiningRoom == "build" && isLoading == true) {
       final roomRef = FirebaseFirestore.instance
           .collection('Languages')
@@ -97,7 +98,16 @@ class _PageOneToOnlineScreenState extends State<PageOneToOnlineScreen> {
 
     super.dispose();
   }
-
+  
+  void recordScoreToTheFirebase(){
+    FirebaseFirestore.instance
+        .collection("users")
+        .doc(MyHomePageState.userId)
+        .update({
+      "score": FieldValue.increment(myScore),
+    });
+  }
+  
   static void increaseCoin() {
     SharedPreferences.getInstance().then((prefs) {
       PageOneState.VocabQuizGameCoin++;
@@ -138,8 +148,7 @@ class _PageOneToOnlineScreenState extends State<PageOneToOnlineScreen> {
     return uuid.v4();
   }
 
-  Future<Map<String, dynamic>> generateWordMapForFirebase(
-      String languageCode) async {
+  Future<Map<String, dynamic>> generateWordMapForFirebase(String languageCode) async {
     String filePathforTranslations = r"assets/translated_words.json";
     String filePathforMeanings = r"assets/meanings.json";
 
@@ -251,6 +260,8 @@ class _PageOneToOnlineScreenState extends State<PageOneToOnlineScreen> {
           .doc(widget.language)
           .collection('Rooms')
           .doc(roomId);
+
+      print(currentRoomReferance);
 
       //ODAYA KELİMELERİNİ,USERMAPI VE QUESTION INDEXI EKLE EĞER KURUCUYSAN
       if (modOfJoiningRoom == "build") {
