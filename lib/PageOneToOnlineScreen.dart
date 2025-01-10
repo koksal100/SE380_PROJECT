@@ -98,7 +98,8 @@ class _PageOneToOnlineScreenState extends State<PageOneToOnlineScreen> {
 
     super.dispose();
   }
-  
+
+
   void recordScoreToTheFirebase(){
     FirebaseFirestore.instance
         .collection("users")
@@ -114,15 +115,21 @@ class _PageOneToOnlineScreenState extends State<PageOneToOnlineScreen> {
       prefs.setInt("coin", PageOneState.VocabQuizGameCoin);
     });
   }
+  bool wordAddedToSharedPref = false;
 
   void _startCountdown() {
     _timer = Timer.periodic(Duration(seconds: 1), (timer) {
       if (countdown > 0) {
+        if(!wordAddedToSharedPref&&countdown<15){
+          wordAddedToSharedPref=true;
+          saveWordToTheSharedPrefs();
+        }
         setState(() {
           countdown--;
         });
       } else {
         setState(() {
+          wordAddedToSharedPref=false;
           beforeWordLearningScreen = true;
         });
         if (modOfJoiningRoom == "join") {
@@ -133,6 +140,7 @@ class _PageOneToOnlineScreenState extends State<PageOneToOnlineScreen> {
           saveWordToTheSharedPrefs();
           isWordLearningScreen = true;
           countdown = 33;
+
         });
         Future.delayed(Duration(seconds: 3)).then((onValue) {
           setState(() {
@@ -481,6 +489,7 @@ class _PageOneToOnlineScreenState extends State<PageOneToOnlineScreen> {
         if (mounted) {
           setState(() {
             countdown = 30;
+            wordAddedToSharedPref = false;
             isLoading = false;
             return;
           });
@@ -515,6 +524,7 @@ class _PageOneToOnlineScreenState extends State<PageOneToOnlineScreen> {
           isWordWinningScreen = true;
           lastWinner = newWinner;
           countdown = 34;
+          wordAddedToSharedPref = false;
           if (mounted) {
             Future.delayed(Duration(seconds: 4)).then((onvalue) {
               if (mounted) {

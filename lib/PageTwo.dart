@@ -6,6 +6,7 @@ import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;
 import 'dart:math';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 
 
 class PageTwo extends StatefulWidget {
@@ -22,12 +23,21 @@ class _PageTwoState extends State<PageTwo> {
   late Map<String, dynamic> choicesMap;
   int trueCounter = 0;
   int falseCounter = 0;
-
   bool isfailedWordsByUserLoaded = false;
   int wordIndex = 0;
+  late Map<String, dynamic> Translations;
+  String selectedLanguage = "";
+  final Map<String, String> languageKeys = {
+    "German": "de",
+    "English": "en",
+    "French": "fr"
+  };
+
+  bool isQuizStarted = false;
 
   @override
   void initState() {
+    super.initState();
     choicesMapFuture("assets/choices.json").then((onValue) {
       setState(() {
         choicesMap = onValue;
@@ -48,14 +58,19 @@ class _PageTwoState extends State<PageTwo> {
       });
     });
 
-    super.initState();
+
+  }
+
+
+  String turnToBaseLanguage(String word,String baseLanguageCode){
+    return Translations[word][baseLanguageCode];
   }
 
   Future<Map<String, String>> readRandomWordsFromFile(String filePath) async {
     try {
       String fileContent = await rootBundle.loadString(filePath);
       final Map<String, dynamic> jsonMap = json.decode(fileContent);
-
+      Translations=jsonMap;
       final List<String> keys = jsonMap.keys.toList()..shuffle();
 
       final List<String> randomKeys = keys.take(30).toList();
@@ -101,6 +116,29 @@ class _PageTwoState extends State<PageTwo> {
     });
   }
 
+  Future<void> startQuizForLanguage(String language) async {
+    selectedLanguage = language;
+    final String key = languageKeys[language]!;
+    failedWordsByUser = await readFailedWordsFromPreferences(key);
+
+    if(failedWordsByUser.isNotEmpty) {
+      await fillCurrentChoices(failedWordsByUser.keys.toList()[wordIndex]);
+      setState(() {
+        isfailedWordsByUserLoaded = true;
+        isQuizStarted = true;
+      });
+    } else {
+      showNoWordsDialog();
+    }
+
+  }
+
+  Future<Map<String,String>> readFailedWordsFromPreferences(String key) async {
+    final prefs = await SharedPreferences.getInstance();
+    List<String> words = prefs.getStringList(key) ?? [];
+    return {for (var word in words) word: word};
+  }
+
   void checkValidity(String answer) {
     if (answer ==
         failedWordsByUser[failedWordsByUser.keys.toList()[wordIndex]]!) {
@@ -108,7 +146,31 @@ class _PageTwoState extends State<PageTwo> {
     } else {
       falseCounter++;
     }
-    setState(() {});
+    setState(() {
+      wordIndex++;
+      if(wordIndex< failedWordsByUser.length) {
+        fillCurrentChoices(failedWordsByUser.keys.toList()[wordIndex]);
+      }
+    });
+  }
+
+  void showNoWordsDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("No Words to Repractice"),
+          content: Text("You don't have any wrongly answered words in this language."),
+          actions: [
+            TextButton( child: Text("OK"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Future<List<String>> getWordsFromPreferences(String key) async {
@@ -134,8 +196,66 @@ class _PageTwoState extends State<PageTwo> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(),
-      body: Stack(children: [
+      appBar: AppBar(title: Text("Repractice Page")),
+      body: isQuizStarted
+          ? buildQuizUI()
+          : buildLanguageSelectionUI(),
+    );
+  }
+
+  Widget buildLanguageSelectionUI() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            "Select a Language to Repractice",
+            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+          ),
+          SizedBox(height: 20),
+          ...languageKeys.keys.map((language) {
+            return ElevatedButton(
+              onPressed: () => startQuizForLanguage(language),
+              child: Text(language),
+            );
+          }).toList(),
+        ],
+      ),
+    );
+  }
+
+  Widget buildQuizUI() {
+    if (wordIndex >= failedWordsByUser.length) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              "Repractice Completed!",
+              style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 20),
+            Text("Correct Answers: $trueCounter"),
+            Text("Incorrect Answers: $falseCounter"),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  isQuizStarted = false;
+                  wordIndex = 0;
+                  trueCounter = 0;
+                  falseCounter = 0;
+                });
+              },
+              child: Text("Back to Menu"),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Stack(
+      children: [
         Positioned(
           left: 10,
           top: 10,
@@ -195,100 +315,91 @@ class _PageTwoState extends State<PageTwo> {
           ),
         ),
         Center(
-          child: isfailedWordsByUserLoaded
-              ? Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    SizedBox(
-                      width: 200,
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              Color.fromARGB(255, 149, 107, 227),
-                              Color.fromARGB(255, 227, 159, 237),
-                            ],
-                            begin: Alignment.topLeft,
-                            end: Alignment.topRight,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(
+                width: 200,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Color.fromARGB(255, 149, 107, 227),
+                        Color.fromARGB(255, 227, 159, 237),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.topRight,
+                    ),
+                    borderRadius: BorderRadius.circular(30),
+                    border: Border.all(
+                      color: Color(0xFFB39DDB),
+                      width: 2.0,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(0.5),
+                        spreadRadius: 2,
+                        blurRadius: 5,
+                        offset: Offset(3, 3),
+                      ),
+                    ],
+                  ),
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 5, vertical: 15),
+                    child: Text(
+                      "${failedWordsByUser.keys.toList()[wordIndex]}",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 25,
+                        color: Color.fromARGB(255, 255, 255, 255),
+                        shadows: [
+                          Shadow(
+                            offset: Offset(1.0, 1.0),
+                            blurRadius: 2.0,
+                            color: Colors.black.withOpacity(0.3),
                           ),
-                          borderRadius: BorderRadius.circular(30),
-                          border: Border.all(
-                            color: Color(0xFFB39DDB),
-                            width: 2.0,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.withOpacity(0.5),
-                              spreadRadius: 2,
-                              blurRadius: 5,
-                              offset: Offset(3, 3),
-                            ),
-                          ],
+                        ],
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(height: 50),
+              ...currentChoices.map((word) {
+                return Padding(
+                  padding: const EdgeInsets.all(13),
+                  child: Container(
+                    width: 300,
+                    height: 60,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        checkValidity(word);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Color.fromARGB(255, 154, 117, 224),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(50),
                         ),
-                        child: Padding(
-                          padding:
-                              EdgeInsets.symmetric(horizontal: 5, vertical: 15),
-                          child: Text(
-                            "${failedWordsByUser.keys.toList()[wordIndex]}",
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 25,
-                              color: Color.fromARGB(255, 255, 255, 255),
-                              shadows: [
-                                Shadow(
-                                  offset: Offset(1.0, 1.0),
-                                  blurRadius: 2.0,
-                                  color: Colors.black.withOpacity(0.3),
-                                ),
-                              ],
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
+                        elevation: 5,
+                      ),
+                      child: Text(
+                        turnToBaseLanguage(word,"tr"),
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.0,
                         ),
                       ),
                     ),
-                    SizedBox(height: 50),
-                    ...currentChoices.map((word) {
-                      return Padding(
-                        padding: const EdgeInsets.all(13),
-                        child: Container(
-                          width: 300,
-                          height: 60,
-                          child: ElevatedButton(
-                            onPressed: () {
-                              setState(() {
-                                checkValidity(word);
-                                wordIndex++;
-                                fillCurrentChoices(
-                                    failedWordsByUser.keys.toList()[wordIndex]);
-                              });
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor:
-                                  Color.fromARGB(255, 154, 117, 224),
-                              foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(50),
-                              ),
-                              elevation: 5,
-                            ),
-                            child: Text(
-                              word,
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 1.0,
-                              ),
-                            ),
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                  ],
-                )
-              : CircularProgressIndicator(),
+                  ),
+                );
+              }).toList(),
+            ],
+          ),
         ),
-      ]),
+      ],
     );
   }
 }
