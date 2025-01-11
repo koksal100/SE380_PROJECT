@@ -99,7 +99,6 @@ class _PageOneToOnlineScreenState extends State<PageOneToOnlineScreen> {
     super.dispose();
   }
 
-
   void recordScoreToTheFirebase(){
     FirebaseFirestore.instance
         .collection("users")
@@ -498,6 +497,28 @@ class _PageOneToOnlineScreenState extends State<PageOneToOnlineScreen> {
     });
   }
 
+  void addToTrueWords(){
+    print("addToTrueWords");
+    SharedPreferences.getInstance().then((onValue){
+      List<String> correctWords=onValue.getStringList("correct_${widget.language}")??[];
+      if(!correctWords.contains("${wordsMap[currentQuestionIndex - 1]["what_word_is_displayed"]}")){
+        correctWords.add("${wordsMap[currentQuestionIndex - 1]["what_word_is_displayed"]}");
+        onValue.setStringList("correct_${widget.language}", correctWords);
+      }
+    });
+  }
+
+  void addToFalseWords(){
+    print("addToFalseWords");
+    SharedPreferences.getInstance().then((onValue){
+      List<String> correctWords=onValue.getStringList("false_${widget.language}")??[];
+      if(!correctWords.contains("${wordsMap[currentQuestionIndex - 1]["what_word_is_displayed"]}")){
+        correctWords.add("${wordsMap[currentQuestionIndex - 1]["what_word_is_displayed"]}");
+        onValue.setStringList("false_${widget.language}", correctWords);
+      }
+    });
+  }
+
   void listenRoomInformations() {
     int oldcurrentQuestionIndex = 0;
     final CurrentRoomReferance = FirebaseFirestore.instance
@@ -517,10 +538,15 @@ class _PageOneToOnlineScreenState extends State<PageOneToOnlineScreen> {
         });
       }
 
-      var newWinner = onData.data()?["lastWinner"];
+      String newWinner = onData.data()?["lastWinner"];
       if (newWinner != lastWinner && mounted) {
         _controller.clear();
         setState(() {
+          if(newWinner.trim()==widget.nickname){
+            addToTrueWords();
+          }else{
+            addToFalseWords();
+          }
           isWordWinningScreen = true;
           lastWinner = newWinner;
           countdown = 34;

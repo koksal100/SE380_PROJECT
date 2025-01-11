@@ -24,22 +24,25 @@ class _PageThreeState extends State<PageThree> {
     loadStatistics();
   }
 
+
+  void initStats(){
+    SharedPreferences.getInstance().then((prefs){
+      setState(() {
+        correctAnswersGerman = (prefs.getStringList("correct_German")??[]).length;
+        incorrectAnswersGerman = (prefs.getStringList("false_German")??[]).length;
+        correctAnswersEnglish = (prefs.getStringList("correct_English")??[]).length;
+        incorrectAnswersEnglish =  (prefs.getStringList("false_English")??[]).length;
+        correctAnswersFrench =  (prefs.getStringList("correct_French")??[]).length;
+        incorrectAnswersFrench =  (prefs.getStringList("false_French")??[]).length;
+      });
+    }).then((onValue){
+
+    });
+  }
+
   Future<void> loadStatistics() async {
     final random = Random();
-
-    setState(() {
-
-      correctAnswersGerman = random.nextInt(50);
-      incorrectAnswersGerman = random.nextInt(50);
-
-
-      correctAnswersEnglish = random.nextInt(50);
-      incorrectAnswersEnglish = random.nextInt(50);
-
-
-      correctAnswersFrench = random.nextInt(50);
-      incorrectAnswersFrench = random.nextInt(50);
-    });
+    initStats();
   }
 
   @override
